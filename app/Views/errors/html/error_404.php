@@ -1,84 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
-    <title><?= lang('Errors.pageNotFound') ?></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oops! Page Not Found</title>
 
     <style>
-        div.logo {
-            height: 200px;
-            width: 155px;
-            display: inline-block;
-            opacity: 0.08;
-            position: absolute;
-            top: 2rem;
-            left: 50%;
-            margin-left: -73px;
-        }
         body {
-            height: 100%;
-            background: #fafafa;
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            color: #777;
-            font-weight: 300;
-        }
-        h1 {
-            font-weight: lighter;
-            letter-spacing: normal;
-            font-size: 3rem;
-            margin-top: 0;
-            margin-bottom: 0;
-            color: #222;
-        }
-        .wrap {
-            max-width: 1024px;
-            margin: 5rem auto;
-            padding: 2rem;
-            background: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+            font-family: "Comic Sans MS", sans-serif;
+            color: #555;
             text-align: center;
-            border: 1px solid #efefef;
-            border-radius: 0.5rem;
-            position: relative;
         }
-        pre {
-            white-space: normal;
-            margin-top: 1.5rem;
+
+        .container {
+            max-width: 600px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
         }
-        code {
-            background: #fafafa;
-            border: 1px solid #efefef;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            display: block;
+
+        h1 {
+            font-size: 5rem;
+            color: #ff6b6b;
+            margin: 0;
         }
+
         p {
-            margin-top: 1.5rem;
+            font-size: 1.2rem;
+            margin: 10px 0;
         }
-        .footer {
-            margin-top: 2rem;
-            border-top: 1px solid #efefef;
-            padding: 1em 2em 0 2em;
-            font-size: 85%;
-            color: #999;
+
+        img {
+            width: 200px;
+            margin: 20px 0;
         }
-        a:active,
-        a:link,
-        a:visited {
-            color: #dd4814;
+
+        a {
+            text-decoration: none;
+            color: white;
+            background-color: #ff6b6b;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        a:hover {
+            background-color: #ff3b3b;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: #888;
         }
     </style>
 </head>
-<body>
-    <div class="wrap">
-        <h1>404</h1>
 
-        <p>
-            <?php if (ENVIRONMENT !== 'production') : ?>
-                <?= nl2br(esc($message)) ?>
-            <?php else : ?>
-                <?= lang('Errors.sorryCannotFind') ?>
-            <?php endif; ?>
-        </p>
+<body>
+    <div class="container">
+        <h1>404</h1>
+        <p>Oops! Sepertinya kamu nyasar. Halaman yang kamu cari tidak ada!</p>
+        <img src="https://media.giphy.com/media/26gslwzOmeYPHrE64/giphy.gif" alt="Funny Cat">
+        <p class="message">Mungkin kucing ini tahu di mana halamanmu? 🤔</p>
+        <a href="/">Kembali ke Beranda</a>
     </div>
 </body>
+
 </html>

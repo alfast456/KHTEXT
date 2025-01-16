@@ -180,9 +180,9 @@
                     <div class="nav-wrap bg-white bg-transparent-card rounded-xxl shadow-xss pt-3 pb-1 mb-2 mt-2">
                         <div class="nav-caption fw-600 font-xssss text-grey-500"><span>MAIN </span>MENU</div>
                         <ul class="mb-3">
-                            <li><a href="default-email-box.html" class="nav-content-bttn open-font"><i class="font-xl text-current feather-inbox me-3"></i><span>Email Box</span><span class="circle-count bg-warning mt-1">584</span></a></li>
-                            <li><a href="default-message.html" class="nav-content-bttn open-font"><i class="font-xl text-current feather-message-square me-3"></i><span>Messages</span><span class="circle-count bg-primary mt-1">12</span></a></li>
-                            <li><a href="default-contacts.html" class="nav-content-bttn open-font"><i class="font-xl text-current feather-users me-3"></i><span>Contacts</span></a></li>
+                            <li><a href="<?= base_url('email') ?>" class="nav-content-bttn open-font"><i class="font-xl text-current feather-inbox me-3"></i><span>Email Box</span><span class="circle-count bg-warning mt-1">584</span></a></li>
+                            <li><a href="<?= base_url('message') ?>" class="nav-content-bttn open-font"><i class="font-xl text-current feather-message-square me-3"></i><span>Messages</span><span class="circle-count bg-primary mt-1">12</span></a></li>
+                            <li><a href="<?= base_url('contact') ?>" class="nav-content-bttn open-font"><i class="font-xl text-current feather-users me-3"></i><span>Contacts</span></a></li>
                         </ul>
                     </div>
                 </div>

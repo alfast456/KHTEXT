@@ -14,4 +14,24 @@ class Home extends BaseController
     {
         return view('content/default-email-box');
     }
+
+    public function login(): string
+    {
+        return view('content/login');
+    }
+
+    public function contact(): string
+    {
+        return view('content/default-member');
+    }
+
+    public function message(): string
+    {
+        return view('content/message');
+    }
+
+    public function notification(): string
+    {
+        return view('content/default-notification');
+    }
 }
