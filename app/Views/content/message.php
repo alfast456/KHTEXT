@@ -16,7 +16,7 @@
             <?php foreach ($messages as $message) : ?>
                 <li>
                     <a href="<?= base_url('messages/' . $message['sender_id']) ?>" class="rounded-3 bg-lightblue theme-light-bg d-flex align-items-center p-3">
-                        <img src="<?= base_url('uploads/avatars/') ?>" alt="user" class="w35 me-3 rounded-circle">
+                        <img src="<?= base_url('images/user_1.png') ?>" alt="user" class="w35 me-3 rounded-circle">
                         <div>
                             <h6 class="font-xssss text-grey-900 mb-0 fw-700"><?= esc($message['sender_name']) ?></h6>
                             <p class="text-grey-500 font-xssss mb-0"><?= esc(substr($message['message'], 0, 50)) ?>...</p>
@@ -32,25 +32,5 @@
         <?php endif; ?>
     </ul>
 </div>
-<script>
-    const socket = new WebSocket('ws://127.0.0.1:8081/message');
-
-    socket.onopen = () => {
-        console.log('Terhubung ke WebSocket server');
-    };
-
-    socket.onmessage = (event) => {
-        console.log('Pesan diterima: ', event.data);
-    };
-
-    socket.onclose = () => {
-        console.log('Koneksi WebSocket ditutup');
-    };
-
-    // Kirim pesan
-    function sendMessage(msg) {
-        socket.send(msg);
-    }
-</script>
 
 <?= $this->endSection(); ?>

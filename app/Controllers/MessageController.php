@@ -32,6 +32,20 @@ class MessageController extends BaseController
         return $this->response->setJSON($messages);
     }
 
+    public function getUnreadCount()
+    {
+        $receiverId = $this->request->getVar('receiver_id'); // ID pengguna yang login
+
+        $db = \Config\Database::connect();
+        $query = $db->table('messages')
+        ->where('receiver_id', $receiverId)
+            ->where('is_read', 0)
+            ->countAllResults();
+
+        return $this->response->setJSON(['unread_count' => $query]);
+    }
+
+
     /**
      * Tambahkan pesan baru.
      */
@@ -47,8 +61,6 @@ class MessageController extends BaseController
             'is_read' => 0,
         ];
 
-        // Debug data yang diterima
-        log_message('info', 'Data yang diterima: ' . json_encode($data));
 
         $messageModel = new \App\Models\MessageModel();
         $save = $messageModel->save($data);
@@ -121,6 +133,11 @@ class MessageController extends BaseController
     //     ]);
     // }
 
+    // public function index()
+    // {
+    //     return view('messages/chat_view');
+    // }
+
     /**
      * Menampilkan daftar pesan terakhir dari setiap pengirim ke user yang sedang login.
      */
@@ -136,13 +153,16 @@ class MessageController extends BaseController
             ->select('messages.*, user.username as sender_name')
             ->join('user', 'user.id = messages.sender_id')
             ->where('receiver_id', $loggedInUserId)
-            ->groupBy('sender_id') // Grup berdasarkan sender_id
-            ->orderBy('created_at', 'DESC') // Urutkan berdasarkan waktu pesan terakhir
+            // ->groupBy('sender_id')
+            ->orderBy('created_at', 'DESC')
+            // limit 1 message
+            ->limit(1)
             ->findAll();
-
+        // dd ($messages);
         // Kirim data ke view
         return view('content/message', [
             'messages' => $messages,
+            'loggedInUserId' => $loggedInUserId,
         ]);
     }
 

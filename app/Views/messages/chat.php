@@ -1,10 +1,85 @@
 <?= $this->extend('layout/index'); ?>
 <?= $this->section('content'); ?>
+<style>
+    /* Wrapper styling */
+    .chat-bottom {
+        background-color: #f4f4f4;
+        /* Warna dasar yang lembut */
+        border-top: 1px solid #ddd;
+        /* Garis pemisah dengan area chat */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        width: 100%;
+    }
 
+    /* Form input styling */
+    .chat-input-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        /* Jarak antar elemen */
+        width: 100%;
+    }
+
+    /* Microphone button */
+    .microphone-btn {
+        background-color: #ffffff;
+        border: 1px solid #ddd;
+        border-radius: 50%;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .microphone-btn:hover {
+        background-color: #f0f0f0;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Chat input field */
+    .chat-input {
+        border: 1px solid #ccc;
+        border-radius: 20px;
+        padding: 10px 15px;
+        font-size: 14px;
+        width: 80%;
+        outline: none;
+        transition: border-color 0.3s ease;
+    }
+
+    .chat-input:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+
+    /* Send button */
+    .send-btn {
+        background-color: #007bff;
+        border: none;
+        color: white;
+        border-radius: 50%;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .send-btn:hover {
+        background-color: #0056b3;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+</style>
 
 <div class="chat-wrapper pt-0 w-100 position-relative scroll-bar bg-white theme-dark-bg">
     <div class="chat-body p-3">
-        <div class="messages-content pb-5">
+        <div id="chat-box" class="messages-content pb-5">
             <!-- Loop pesan -->
             <?php if (!empty($messages)) : ?>
                 <?php foreach ($messages as $message) : ?>
@@ -29,79 +104,25 @@
         </div>
     </div>
 </div>
-<div class="chat-bottom dark-bg p-3 shadow-none theme-dark-bg" style="width: 98%;">
-    <form id="chatForm" class="d-flex align-items-center" onsubmit="sendMessage(event)">
-        <button type="button" class="bg-grey float-left"><i class="ti-microphone text-grey-600"></i></button>
-        <div class="form-group">
-            <input type="text" id="chatMessage" class="form-control" placeholder="Start typing..." autocomplete="off">
+<div class="chat-bottom p-3 shadow-sm theme-dark-bg" style="width: 50%;">
+    <form id="chatForm" class="chat-input-wrapper" onsubmit="sendMessage(event)">
+        <div class="form-group flex-grow-1">
+            <input
+                type="text"
+                id="chatMessage"
+                class="form-control chat-input"
+                placeholder="Type your message..."
+                autocomplete="off">
         </div>
-        <button type="submit" class="bg-current"><i class="ti-arrow-right text-white"></i></button>
+        <button type="submit" id="send" class="send-btn">
+            <i class="feather-send text-white"></i>
+        </button>
     </form>
 </div>
 
 
-<script>
-    const socket = new WebSocket('ws://127.0.0.1:8081/message');
-
-    socket.onopen = () => {
-        console.log('Terhubung ke WebSocket server');
-    };
-
-    socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-
-        // Periksa apakah pesan berasal dari user lain
-        if (data.sender_id !== <?= $loggedInUserId ?>) {
-            const messagesContent = document.querySelector('.messages-content');
-            const newMessage = `
-            <div class="message-item">
-                <div class="message-user">
-                    <figure class="avatar">
-                        <img src="<?= base_url('images/user_1.png') ?>" alt="image">
-                    </figure>
-                    <div>
-                        <h5>${data.sender_name}</h5>
-                        <div class="time">${new Date().toLocaleTimeString()}</div>
-                    </div>
-                </div>
-                <div class="message-wrap">${data.message}</div>
-            </div>
-        `;
-            messagesContent.innerHTML += newMessage;
-
-            // Scroll ke bawah otomatis
-            messagesContent.scrollTop = messagesContent.scrollHeight;
-        }
-    };
 
 
-    socket.onclose = () => {
-        console.log('Koneksi WebSocket ditutup');
-    };
 
-    // Fungsi untuk mengirim pesan
-    function sendMessage(event) {
-        event.preventDefault(); // Mencegah form refresh
-
-        const input = document.getElementById('chatMessage');
-        const message = input.value.trim();
-        const senderId = 1; // ID pengirim
-        const receiverId = 2; // ID penerima
-
-        if (message !== '') {
-            const payload = {
-                sender_id: senderId, // ID user yang login
-                receiver_id: receiverId, // ID penerima pesan
-                message: message,
-            };
-
-            console.log('Mengirim data:', payload); // Debug data yang dikirim
-            socket.send(JSON.stringify(payload));
-
-            // Kosongkan input setelah mengirim
-            input.value = '';
-        }
-    }
-</script>
 
 <?= $this->endSection(); ?>

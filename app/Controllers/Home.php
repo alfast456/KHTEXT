@@ -10,9 +10,15 @@ class Home extends BaseController
     
     }
 
-    public function email(): string
+    public function email()
     {
-        return view('content/default-email-box');
+        $loggedInUserId = session()->get('id'); // Pastikan Anda memiliki session user ID
+
+        // dd ($loggedInUserId);
+
+        return view('content/default-email-box', [
+            'loggedInUserId' => $loggedInUserId,
+        ]);
     }
 
     public function login(): string
@@ -20,14 +26,23 @@ class Home extends BaseController
         return view('content/login');
     }
 
-    public function contact(): string
+    public function contact()
     {
-        return view('content/default-member');
+        $loggedInUserId = session()->get('id'); // Pastikan Anda memiliki session user ID
+
+        // dd ($loggedInUserId);
+        return view('content/default-member', [
+            'loggedInUserId' => $loggedInUserId,
+        ]);
     }
 
-    public function message(): string
+    public function message()
     {
-        return view('content/message');
+        $loggedInUserId = session()->get('id'); // Pastikan Anda memiliki session user ID
+
+        return view('content/message', [
+            'loggedInUserId' => $loggedInUserId,
+        ]);
     }
 
     public function notification(): string

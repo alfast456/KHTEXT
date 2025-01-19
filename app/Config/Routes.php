@@ -26,6 +26,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'Home::index');
     $routes->get('/dashboard', 'Home::index');
     $routes->get('message', 'MessageController::index');
+    $routes->get('notifications/unread', 'MessageController::getUnreadCount');
 });
 
 

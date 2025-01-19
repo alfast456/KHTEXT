@@ -165,8 +165,14 @@
                 </div>
             </div>
 
+            <!-- <div class="notification">
+                <i class="ti-bell"></i>
+                <span id="notificationCount" class="badge bg-danger" style="display: none;">0</span>
+            </div> -->
 
-            <a href="default-settings.html" class="p-0 ms-3 menu-icon"><img src="images/profile-4.png" alt="user" class="w40 mt--1"></a>
+
+
+            <a href="default-settings.html" class="p-0 ms-3 menu-icon"><img src="<?= base_url('images/user_1.png') ?>" alt="user" class="w40 mt--1"></a>
 
         </div>
         <!-- navigation top -->
@@ -181,7 +187,10 @@
                         <div class="nav-caption fw-600 font-xssss text-grey-500"><span>MAIN </span>MENU</div>
                         <ul class="mb-3">
                             <li><a href="<?= base_url('email') ?>" class="nav-content-bttn open-font"><i class="font-xl text-current feather-inbox me-3"></i><span>Email Box</span><span class="circle-count bg-warning mt-1">584</span></a></li>
-                            <li><a href="<?= base_url('message') ?>" class="nav-content-bttn open-font"><i class="font-xl text-current feather-message-square me-3"></i><span>Messages</span><span class="circle-count bg-primary mt-1">12</span></a></li>
+                            <li><a href="<?= base_url('message') ?>" class="nav-content-bttn open-font"><i class="font-xl text-current feather-message-square me-3"></i><span>Messages</span>
+                                        <div class="notification">
+                                            <span id="notificationCount" class="circle-count bg-primary mt-1" style="display: none;">0</span>
+                                        </div></a></li>
                             <li><a href="<?= base_url('contact') ?>" class="nav-content-bttn open-font"><i class="font-xl text-current feather-users me-3"></i><span>Contacts</span></a></li>
                         </ul>
                     </div>
@@ -211,7 +220,128 @@
 
     </div>
 
+    <script>
+        const conn = new WebSocket('ws://127.0.0.1:8080');
 
+        // Ambil receiver_id dari URL
+        const urlPath = window.location.pathname; // Mendapatkan path URL
+        const receiverId = urlPath.split('/').pop(); // Ambil bagian terakhir dari path sebagai receiver_id
+
+        conn.onopen = () => {
+            console.log('Connection established!');
+        };
+
+        conn.onmessage = (e) => {
+            const data = JSON.parse(e.data);
+
+            // Periksa jika pesan adalah tipe 'notification'
+            if (data.type === 'notification' && data.receiver_id == <?= $loggedInUserId ?>) {
+                const notificationElement = document.getElementById('notificationCount');
+                const unreadCount = data.unread_count;
+
+                // Update jumlah notifikasi
+                if (unreadCount > 0) {
+                    notificationElement.textContent = unreadCount;
+                    notificationElement.style.display = 'inline-block';
+                } else {
+                    notificationElement.style.display = 'none';
+                }
+            }
+
+            // Jika pesan biasa (chat message), tambahkan ke chat box
+            if (data.type !== 'notification' && data.sender_id !== <?= $loggedInUserId ?>) {
+                const chatBox = document.getElementById('chat-box');
+                const newMessage = `
+        <div class="message-item">
+            <div class="message-user">
+                <figure class="avatar">
+                    <img src="<?= base_url('images/user_1.png') ?>" alt="image">
+                </figure>
+                <div>
+                    <h5>${data.sender_name}</h5>
+                    <div class="time">${new Date().toLocaleTimeString()}</div>
+                </div>
+            </div>
+            <div class="message-wrap">${data.message}</div>
+        </div>
+        `;
+
+                chatBox.innerHTML += newMessage;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        };
+
+        document.getElementById('chatForm').addEventListener('submit', (event) => {
+            event.preventDefault(); // Mencegah form refresh
+
+            const input = document.getElementById('chatMessage');
+            const message = input.value.trim();
+            const senderId = <?= $loggedInUserId ?>; // ID pengirim
+
+            if (!receiverId) {
+                alert('Receiver ID tidak ditemukan di URL!');
+                return;
+            }
+
+            if (message !== '') {
+                const payload = {
+                    sender_id: senderId,
+                    receiver_id: receiverId, // Ambil receiver_id dari URL
+                    message: message,
+                };
+
+                console.log('Sending data:', payload); // Debug data yang dikirim
+                conn.send(JSON.stringify(payload));
+
+                // Tampilkan pesan di chat-box secara langsung
+                const chatBox = document.getElementById('chat-box');
+                const newMessage = `
+        <div class="message-item outgoing-message">
+            <div class="message-user">
+                <figure class="avatar">
+                    <img src="<?= base_url('images/user_login.png') ?>" alt="image">
+                </figure>
+                <div>
+                    <h5>Anda</h5>
+                    <div class="time">${new Date().toLocaleTimeString()}</div>
+                </div>
+            </div>
+            <div class="message-wrap">${message}</div>
+        </div>
+        `;
+
+                // Tambahkan pesan ke chat box
+                chatBox.innerHTML += newMessage;
+
+                // Scroll otomatis ke bawah
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                // Kosongkan input setelah mengirim
+                input.value = '';
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const receiverId = <?= $loggedInUserId ?>; // ID pengguna yang login
+            const notificationElement = document.getElementById('notificationCount');
+
+            // AJAX request untuk mendapatkan jumlah notifikasi
+            fetch(`<?= base_url('notifications/unread') ?>?receiver_id=${receiverId}`)
+                .then((response) => response.json())
+                .then((data) => {
+                    const unreadCount = data.unread_count;
+
+                    // Tampilkan jumlah notifikasi jika ada
+                    if (unreadCount > 0) {
+                        notificationElement.textContent = unreadCount;
+                        notificationElement.style.display = 'inline-block';
+                    } else {
+                        notificationElement.style.display = 'none';
+                    }
+                })
+                .catch((error) => console.error('Error fetching unread notifications:', error));
+        });
+    </script>
     <script src="<?= base_url("js/plugin.js") ?>"></script>
 
     <script src="<?= base_url("js/lightbox.js") ?>"></script>
