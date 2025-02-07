@@ -1,128 +1,198 @@
 <?= $this->extend('layout/index'); ?>
 <?= $this->section('content'); ?>
+
 <style>
-    /* Wrapper styling */
-    .chat-bottom {
-        background-color: #f4f4f4;
-        /* Warna dasar yang lembut */
-        border-top: 1px solid #ddd;
-        /* Garis pemisah dengan area chat */
+    /* Reset dan dasar */
+    * {
+        box-sizing: border-box;
+    }
+
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: 'Arial', sans-serif;
+        background: #f8f9fa;
+    }
+
+    /* Wrapper utama chat */
+    .chat-wrapper {
         display: flex;
-        align-items: center;
-        justify-content: center;
+        flex-direction: column;
+        height: 100vh;
+    }
+
+    /* Header Chat */
+    .chat-header {
+        background: #007bff;
+        color: #fff;
         padding: 1rem;
-        width: 100%;
+        text-align: center;
+        font-size: 1.2rem;
+        font-weight: bold;
     }
 
-    /* Form input styling */
+    /* Body Chat */
+    .chat-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        background: #fff;
+    }
+
+    /* Container Pesan */
+    .messages-content {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    /* Style Bubble Pesan Umum */
+    .message-item {
+        max-width: 70%;
+        position: relative;
+        padding: 10px 15px;
+        word-wrap: break-word;
+        margin-bottom: 10px;
+    }
+
+    /* Bubble Incoming ala WhatsApp */
+    .message-item.incoming-message {
+        background: #f1f1f1;
+        color: #333;
+        align-self: flex-start;
+        border-radius: 15px 15px 15px 0;
+    }
+
+    .message-item.incoming-message:before {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: -10px;
+        border: 10px solid transparent;
+        border-right-color: #f1f1f1;
+        /* Mengatur agar tail menempel pada bubble */
+        top: auto;
+    }
+
+    /* Bubble Outgoing ala WhatsApp */
+    .message-item.outgoing-message {
+        background: #007bff;
+        color: #fff;
+        align-self: flex-end;
+        border-radius: 15px 15px 0 15px;
+    }
+
+    .message-item.outgoing-message:after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        right: -10px;
+        border: 10px solid transparent;
+        border-left-color: #007bff;
+        top: auto;
+    }
+
+    /* Header Pesan: Nama pengirim */
+    .message-user {
+        margin-bottom: 5px;
+    }
+
+    .message-user h5 {
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: bold;
+    }
+
+    /* Isi Pesan */
+    .message-text {
+        line-height: 1.4;
+    }
+
+    /* Waktu Pesan */
+    .time {
+        font-size: 0.7rem;
+        color: rgba(0, 0, 0, 0.6);
+        text-align: right;
+        margin-top: 5px;
+    }
+
+    /* Input Chat */
     .chat-input-wrapper {
+        padding: 0.75rem 1rem;
+        border-top: 1px solid #ddd;
         display: flex;
         align-items: center;
-        gap: 10px;
-        /* Jarak antar elemen */
-        width: 100%;
+        background: #fff;
     }
 
-    /* Microphone button */
-    .microphone-btn {
-        background-color: #ffffff;
-        border: 1px solid #ddd;
-        border-radius: 50%;
-        padding: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .microphone-btn:hover {
-        background-color: #f0f0f0;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Chat input field */
     .chat-input {
+        flex: 1;
+        padding: 0.75rem 1rem;
         border: 1px solid #ccc;
         border-radius: 20px;
-        padding: 10px 15px;
-        font-size: 14px;
-        width: 80%;
+        font-size: 1rem;
         outline: none;
-        transition: border-color 0.3s ease;
     }
 
     .chat-input:focus {
         border-color: #007bff;
-        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
     }
 
-    /* Send button */
     .send-btn {
-        background-color: #007bff;
+        background: #007bff;
         border: none;
-        color: white;
+        color: #fff;
+        padding: 0.75rem;
         border-radius: 50%;
-        padding: 10px;
+        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
+        margin-left: 10px;
     }
 
     .send-btn:hover {
-        background-color: #0056b3;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        background: #0056b3;
     }
 </style>
 
-<div class="chat-wrapper pt-0 w-100 position-relative scroll-bar bg-white theme-dark-bg">
-    <div class="chat-body p-3">
-        <div id="chat-box" class="messages-content pb-5">
-            <!-- Loop pesan -->
+<div class="chat-wrapper">
+    <!-- Header Chat -->
+    <div class="chat-header">
+        Chat Room with <?= esc($receiverName) ?>
+    </div>
+
+    <!-- Body Chat -->
+    <div class="chat-body">
+        <div id="chat-box" class="messages-content">
             <?php if (!empty($messages)) : ?>
                 <?php foreach ($messages as $message) : ?>
-                    <div class="message-item <?= $message['sender_id'] == $loggedInUserId ? 'outgoing-message' : '' ?>">
+                    <?php $isOutgoing = $message['sender_id'] == $loggedInUserId; ?>
+                    <div class="message-item <?= $isOutgoing ? 'outgoing-message' : 'incoming-message' ?>">
                         <div class="message-user">
-                            <figure class="avatar">
-                                <img src="<?= base_url('uploads/avatars/' . ($message['sender_id'] == $loggedInUserId ? 'user-login.png' : 'user-sender.png')) ?>" alt="image">
-                            </figure>
-                            <div>
-                                <h5><?= $message['sender_id'] == $loggedInUserId ? 'Anda' : esc($message['sender_name']) ?></h5>
-                                <div class="time"><?= date('h:i A', strtotime($message['created_at'])) ?></div>
-                            </div>
+                            <h5><?= $isOutgoing ? 'Anda' : esc($message['sender_name']) ?></h5>
                         </div>
-                        <div class="message-wrap"><?= esc($message['message']) ?></div>
+                        <div class="message-text">
+                            <?= esc($message['message']) ?>
+                        </div>
+                        <div class="time"><?= date('h:i A', strtotime($message['created_at'])) ?></div>
                     </div>
                 <?php endforeach; ?>
             <?php else : ?>
                 <p class="text-center text-grey-500">Belum ada pesan.</p>
             <?php endif; ?>
-            <!-- End loop -->
-            <div class="clearfix"></div>
         </div>
     </div>
-</div>
-<div class="chat-bottom p-3 shadow-sm theme-dark-bg" style="width: 50%;">
+
+    <!-- Input Chat -->
     <form id="chatForm" class="chat-input-wrapper" onsubmit="sendMessage(event)">
-        <div class="form-group flex-grow-1">
-            <input
-                type="text"
-                id="chatMessage"
-                class="form-control chat-input"
-                placeholder="Type your message..."
-                autocomplete="off">
-        </div>
+        <textarea name="message" id="chatMessage" class="chat-input" placeholder="Ketik pesan..." rows="1"></textarea>
         <button type="submit" id="send" class="send-btn">
-            <i class="feather-send text-white"></i>
+            <i class="feather-send"></i>
         </button>
     </form>
 </div>
-
-
-
-
-
 
 <?= $this->endSection(); ?>

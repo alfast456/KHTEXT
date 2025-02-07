@@ -6,15 +6,18 @@ use App\Controllers\BaseController;
 use CodeIgniter\HTTP\ResponseInterface;
 
 use App\Models\MessageModel;
+use App\Models\UserModel;
 
 class MessageController extends BaseController
 {
     protected $messageModel;
+    protected $user;
     protected $session;
 
     public function __construct()
     {
         $this->messageModel = new MessageModel();
+        $this->userModel = new UserModel();
         $this->session = session();
     }
 
@@ -176,12 +179,13 @@ class MessageController extends BaseController
 
         // Ambil pesan antara pengguna yang login dan penerima
         $messages = $this->messageModel->getMessages($loggedInUserId, $receiverId);
-
+        $findUser = $this->userModel->find($receiverId);
         // Kirim data ke view
         return view('messages/chat', [
             'messages' => $messages,
             'loggedInUserId' => $loggedInUserId,
             'receiverId' => $receiverId,
+            'receiverName' => $findUser['username'],
         ]);
     }
 
