@@ -14,6 +14,8 @@
         height: 100%;
         font-family: 'Arial', sans-serif;
         background: #f8f9fa;
+        overflow: hidden;
+        /* Menonaktifkan scroll pada halaman utama */
     }
 
     /* Wrapper utama chat */
@@ -31,11 +33,13 @@
         text-align: center;
         font-size: 1.2rem;
         font-weight: bold;
+        /* uppercase */
     }
 
     /* Body Chat */
     .chat-body {
         flex: 1;
+        max-height: 450px;
         overflow-y: auto;
         padding: 1rem;
         background: #fff;
@@ -160,8 +164,8 @@
 
 <div class="chat-wrapper">
     <!-- Header Chat -->
-    <div class="chat-header">
-        Chat Room with <?= esc($receiverName) ?>
+    <div class="chat-header text-uppercase">
+        <?= esc($receiverName) ?>
     </div>
 
     <!-- Body Chat -->
@@ -169,8 +173,14 @@
         <div id="chat-box" class="messages-content">
             <?php if (!empty($messages)) : ?>
                 <?php foreach ($messages as $message) : ?>
-                    <?php $isOutgoing = $message['sender_id'] == $loggedInUserId; ?>
-                    <div class="message-item <?= $isOutgoing ? 'outgoing-message' : 'incoming-message' ?>">
+                    <?php
+                    $isOutgoing = $message['sender_id'] == $loggedInUserId;
+                    // Tandai hanya pesan masuk yang belum dibaca
+                    $isUnread = !$isOutgoing && $message['is_read'] == 0;
+                    ?>
+                    <div class="message-item <?= $isOutgoing ? 'outgoing-message' : 'incoming-message' ?>
+                        <?= $isUnread ? 'unread' : '' ?>"
+                        data-message-id="<?= $message['id'] ?>">
                         <div class="message-user">
                             <h5><?= $isOutgoing ? 'Anda' : esc($message['sender_name']) ?></h5>
                         </div>
@@ -183,16 +193,59 @@
             <?php else : ?>
                 <p class="text-center text-grey-500">Belum ada pesan.</p>
             <?php endif; ?>
+
         </div>
     </div>
 
     <!-- Input Chat -->
-    <form id="chatForm" class="chat-input-wrapper" onsubmit="sendMessage(event)">
+    <form id="chatForm" class="chat-input-wrapper" enctype="multipart/form-data">
         <textarea name="message" id="chatMessage" class="chat-input" placeholder="Ketik pesan..." rows="1"></textarea>
+        <!-- Input file untuk gambar atau file kecil -->
+        <!-- <input type="file" id="fileInput" accept="image/*" /> -->
         <button type="submit" id="send" class="send-btn">
             <i class="feather-send"></i>
         </button>
     </form>
+
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    // Pastikan DOM sudah dimuat
+    document.addEventListener('DOMContentLoaded', function() {
+        // Pilih semua pesan yang belum dibaca
+        const unreadMessages = document.querySelectorAll('.message-item.unread');
+
+        unreadMessages.forEach(function(messageItem) {
+            messageItem.addEventListener('click', function() {
+                const messageId = this.getAttribute('data-message-id');
+
+                if (messageId) {
+                    // Kirim request untuk mengupdate status pesan ke controller CI4
+                    fetch("<?= base_url('messages/mark_read') ?>", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-Requested-With": "XMLHttpRequest" // untuk deteksi request AJAX
+                            },
+                            body: JSON.stringify({
+                                message_id: messageId
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Jika berhasil, hapus kelas 'unread'
+                                this.classList.remove('unread');
+                            }
+                        })
+                        .catch(error => console.error('Error updating message read status:', error));
+                }
+            });
+        });
+    });
+</script>
+
 
 <?= $this->endSection(); ?>

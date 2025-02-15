@@ -18,7 +18,7 @@ $routes->group('messages', function ($routes) {
     $routes->get('get/(:num)/(:num)', 'MessageController::getMessages/$1/$2');
     $routes->get('(:num)/(:num)', 'MessageController::index/$1/$2');
     $routes->get('(:num)', 'MessageController::chat/$1');
-    $routes->put('read/(:num)', 'MessageController::markAsRead/$1');
+    $routes->put('mark_read', 'MessageController::markAsRead');
 });
 
 // route filter auth

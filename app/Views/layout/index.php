@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="<?= base_url("css/lightbox.css") ?>" />
 
     <style>
+        
+
         /* Contoh tambahan style untuk header agar tampilan rapi */
         .nav-header {
             display: flex;
@@ -240,7 +242,8 @@
                 </div>
                 <!-- Foto Profil -->
                 <div class="nav-user">
-                    <a href="default-settings.html" class="menu-icon p-0">
+                    <!-- modal logout -->
+                    <a href="" class="menu-icon p-0" data-bs-toggle="modal" data-bs-target="#logout">
                         <img src="<?= base_url('images/user_1.png') ?>" alt="user" class="w40 mt--1" />
                     </a>
                 </div>
@@ -285,12 +288,34 @@
     </div>
     <!-- End Main Wrapper -->
 
+    <!-- Modal Logout -->
+    <div class="modal fade" id="logout" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <figure class="avatar avatar-100 mb-4">
+                        <img src="<?= base_url('images/user_1.png') ?>" alt="">
+                    </figure>
+                    <h5 class="mb-4">Apakah Anda yakin ingin keluar?</h5>
+                    <div class="d-flex justify-content-center">
+                        <button type="button" class="btn btn-primary me-2" data-bs-dismiss="modal">Batal</button>
+                        <a href="<?= base_url('logout') ?>" class="btn btn-danger">Keluar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- WebSocket & Chat Scripts -->
     <script>
         // Skrip WebSocket & chat
         const conn = new WebSocket('ws://127.0.0.1:8080');
         const urlPath = window.location.pathname;
         const receiverId = urlPath.split('/').pop();
+        const chatBox = document.getElementById('chat-box');
 
         conn.onopen = () => {
             console.log('Connection established!');
@@ -299,6 +324,7 @@
         conn.onmessage = (e) => {
             const data = JSON.parse(e.data);
 
+            // Tangani notifikasi jika perlu
             if (data.type === 'notification' && data.receiver_id == <?= $loggedInUserId ?>) {
                 const notificationElement = document.getElementById('notificationCount');
                 const unreadCount = data.unread_count;
@@ -308,17 +334,33 @@
                 } else {
                     notificationElement.style.display = 'none';
                 }
+                return;
             }
 
+            // Tampilkan pesan dari pengguna lain
             if (data.type !== 'notification' && data.sender_id !== <?= $loggedInUserId ?>) {
-                const chatBox = document.getElementById('chat-box');
+                let fileContent = '';
+                // Jika pesan memiliki file, cek tipe file untuk menentukan tampilannya
+                if (data.file_url && data.file_type) {
+                    if (data.file_type.startsWith('image/')) {
+                        fileContent = `<div class="message-file">
+                                   <img src="${data.file_url}" alt="${data.file_name}" style="max-width:200px;">
+                               </div>`;
+                    } else {
+                        fileContent = `<div class="message-file">
+                                   <a href="${data.file_url}" target="_blank">${data.file_name}</a>
+                               </div>`;
+                    }
+                }
+
                 const newMessage = `
           <div class="message-item">
             <div class="message-user">
                 <h5>${data.sender_name}</h5>
-                </div>
-                <div class="message-text">${data.message}</div>
-                <div class="time">${new Date().toLocaleTimeString()}</div>
+            </div>
+            <div class="message-text">${data.message}</div>
+            ${fileContent}
+            <div class="time">${new Date().toLocaleTimeString()}</div>
           </div>
         `;
                 chatBox.innerHTML += newMessage;
@@ -330,6 +372,7 @@
             event.preventDefault();
 
             const input = document.getElementById('chatMessage');
+            // const fileInput = document.getElementById('fileInput');
             const message = input.value.trim();
             const senderId = <?= $loggedInUserId ?>;
 
@@ -338,6 +381,47 @@
                 return;
             }
 
+            // Jika ada file yang dipilih, proses file tersebut
+            // if (fileInput.files.length > 0) {
+            //     const file = fileInput.files[0];
+            //     const reader = new FileReader();
+            //     reader.onload = function(e) {
+            //         const fileData = e.target.result; // Data URL (Base64 encoded)
+            //         const payload = {
+            //             sender_id: senderId,
+            //             receiver_id: receiverId,
+            //             message: message, // Bisa dikosongkan jika hanya mengirim file
+            //             file: {
+            //                 name: file.name,
+            //                 type: file.type,
+            //                 data: fileData
+            //             }
+            //         };
+            //         console.log('Sending file data:', payload);
+            //         conn.send(JSON.stringify(payload));
+
+            //         // Tampilkan pesan atau preview di chat box jika perlu
+            //         const chatBox = document.getElementById('chat-box');
+            //         const newMessage = `
+            // <div class="message-item outgoing-message">
+            //     <div class="message-user">
+            //         <h5>Anda</h5>
+            //         </div>
+            //         <div class="message-text">${message}</div>
+            //         <div class="message-file">
+            //             <a href="${fileData}" target="_blank">${file.name}</a>
+            //         </div>
+            //         <div class="time">${new Date().toLocaleTimeString()}</div>
+            // </div>
+            // `;
+
+            //         chatBox.innerHTML += newMessage;
+            //         chatBox.scrollTop = chatBox.scrollHeight;
+            //         // Reset input file
+            //         fileInput.value = '';
+            //     };
+            //     reader.readAsDataURL(file);
+            // } else 
             if (message !== '') {
                 const payload = {
                     sender_id: senderId,
@@ -380,6 +464,14 @@
                     }
                 })
                 .catch((error) => console.error('Error fetching unread notifications:', error));
+        });
+    </script>
+
+    <script>
+        // js logout
+        const logout = document.getElementById('logout');
+        logout.addEventListener('click', function() {
+            localStorage.clear();
         });
     </script>
 
