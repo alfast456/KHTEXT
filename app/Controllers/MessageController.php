@@ -104,7 +104,7 @@ class MessageController extends BaseController
                 }
             }
         }
-        dd ($data);
+        // dd ($data);
         // Simpan data pesan ke database
         $messageModel = new \App\Models\MessageModel();
         $save = $messageModel->save($data);
@@ -225,10 +225,8 @@ class MessageController extends BaseController
             ->select('messages.*, user.username as sender_name')
             ->join('user', 'user.id = messages.sender_id')
             ->where('receiver_id', $loggedInUserId)
-            // ->groupBy('sender_id')
+            ->groupBy('sender_id')
             ->orderBy('created_at', 'DESC')
-            // limit 1 message
-            ->limit(1)
             ->findAll();
         // dd ($messages);
         // Kirim data ke view

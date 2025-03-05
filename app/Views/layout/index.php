@@ -262,9 +262,9 @@
                                 <a href="<?= base_url('message') ?>" class="nav-content-bttn open-font">
                                     <i class="font-xl text-current feather-message-square me-3"></i>
                                     <span>Messages</span>
-                                    <div class="notification">
+                                    <!-- <div class="notification">
                                         <span id="notificationCount" class="circle-count bg-primary mt-1" style="display: none;">0</span>
-                                    </div>
+                                    </div> -->
                                 </a>
                             </li>
                             <li>
@@ -429,7 +429,7 @@
                     message: message,
                 };
 
-                console.log('Sending data:', payload);
+                // console.log('Sending data:', payload);
                 conn.send(JSON.stringify(payload));
 
                 const chatBox = document.getElementById('chat-box');
